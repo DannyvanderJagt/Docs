@@ -49,6 +49,12 @@ let Docs = {
         });
         return this.paths;
     },
+    
+    /**
+     * Get all the files within a directory and the sub directorties.
+     * @param  {String} directory - The directory
+     * @return {Array} the files
+     */
     getAllFiles(directory){
         Type('String', directory);
         let files = [];
@@ -91,5 +97,5 @@ let Docs = {
 
 export default Docs;
 
-Docs.watch(__dirname+'/index.js');
+Docs.watch(__dirname);
 Docs.destruct();

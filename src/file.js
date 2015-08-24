@@ -1,5 +1,6 @@
 import Fs from 'fs';
-import TagDestructor from './tagdestructor';
+import Tags from './tags';
+import Util from 'util';
 
 /**
  * Docs
@@ -29,14 +30,17 @@ class File{
             lines = lines.filter((line)=>{
                 return line === '' || line === '/**' || line == '/' ? 0 : 1;
             });
-            // console.log('---> comment');
-            // console.log(lines);
-            
+
             // Process all the tags.
-            // this.fields = Object.assign(this.fields, this.destructComment(lines));
-            console.log( this.destructComment(lines));
+            let result = this.destructComment(lines);
+            
+            for(let r in result){
+                this.addTagToFields(r, result[r], this.fields);
+            }
+
         });
-        console.log(this.fields);
+        console.log(JSON.stringify(this.fields).replace(/\n/,''));
+        
     }
     destructComment(comment){
         let fields = {};
@@ -44,6 +48,12 @@ class File{
         comment.forEach((line) => {
             fields = Object.assign(fields, this.destructCommentLine(line));
         });
+        
+        if(fields.param){
+            fields = {
+                'function': fields
+            };
+        }
 
         return fields;
     }
@@ -61,15 +71,46 @@ class File{
         
         let tag = tagCheck[1];
         
-        if(!TagDestructor[tag]){
+        if(!Tags[tag]){
             console.log('[NOT SUPPORTED] - The tag ' + tag + ' is not supported!');
             return false;
         }
         
-        if(!fields[tag]){
-            fields[tag] = [];
+        let result = Tags[tag].process(line);
+        
+        this.addTagToFields(tag, result, fields);
+
+        return fields;
+    }
+    addTagToFields(tag, result, fields){
+        if(Tags[tag].type === 'array'){
+            
+            
+            if(!fields[tag]){
+                fields[tag] = [];
+            }
+            // console.log("ADD ARRAY",tag,  result);
+            if(Util.isArray(result)){
+                fields[tag].push(result[0]);
+            }else{
+                fields[tag].push(result);
+            }
         }
-        fields[tag].push(TagDestructor[tag](line));
+        
+        if(Tags[tag].type === 'string'){
+            if(!fields[tag]){
+                fields[tag] = "";
+            }
+            fields[tag] += result;
+        }
+        
+        if(Tags[tag].type === 'boolean'){
+            fields[tag] = result;
+        }
+        
+        if(Tags[tag].type === 'replace'){
+            fields[tag] = result;
+        }
         
         return fields;
     }
