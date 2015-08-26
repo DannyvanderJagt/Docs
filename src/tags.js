@@ -26,6 +26,12 @@ var Tags = {
             };
         }
     },
+    private:{
+        type: 'string',
+        process(line){
+            return true;
+        }
+    },
     return:{
         type: 'array',
         process(line){

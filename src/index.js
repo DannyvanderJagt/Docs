@@ -23,6 +23,7 @@ let Docs = {
     
     /**
      * @var {Array} files - All the file instances.
+     * @private
      */
     files:[],
     
@@ -33,6 +34,8 @@ let Docs = {
     
     /**
      * Watch directories and/or files.
+     * @name watch
+     * @param  {String} paths - The path to the directory or file.
      * @param  {String} paths - The path to the directory or file.
      * @return {Array} All the files that are watched.
      */
@@ -60,7 +63,9 @@ let Docs = {
     /* File related stuff */
     /**
      * Get all the files within a directory and the sub directorties.
+     * @name getAllFiles
      * @param  {String} directory - The directory
+     * @param  {String} paths - The path to the directory or file.
      * @return {Array} the files
      */
     getAllFiles(directory){
@@ -92,7 +97,7 @@ let Docs = {
     },
     destructFile(path){
         Type('String', path);
-        console.log('---- ', path);
+        // console.log('---- ', path);
         let file = new File(path);
         this.files.push(file);
         
@@ -166,7 +171,7 @@ let Docs = {
 
 export default Docs;
 
-// Docs.watch(__dirname);
-Docs.watch(__dirname+'/index.js');
+Docs.watch(__dirname);
+// Docs.watch(__dirname+'/index.js');
 Docs.destruct();
 console.log(Docs.namespaces);

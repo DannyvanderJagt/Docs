@@ -25,6 +25,7 @@ class File{
     }
     /**
      * Get the comments of the file contents.
+     * @private
      * @return {scope}
      */
     getComments(){
@@ -69,23 +70,26 @@ class File{
         let fields = {};
         // Process all the tags.
         lines.forEach((line) => {
-            fields = Object.assign(fields, this.destructCommentLine(line));
+            let results = this.destructCommentLine(line);
+            for(let tag in results){
+                Docs.addTagToFields(tag, results[tag], fields);
+            }
         });
         
         fields.line = this.getLineNumber(comment);
         
         if(fields.param || fields.return){
-            let line = this.contents.split(/[\n\r]/g)[fields.line-1];
-            line = line.replace(/\s*/,'');
-            line = line.match(/^(.*)\(\)/);
-            if(line){
-                line = line[1];
-            }
-            
-            fields.name = line;
             fields = {
                 'function': fields
             };
+        }
+        if(fields.var){
+            fields.var = fields.var.map((v) => {
+                v.line = fields.line;
+                v.private = fields.private ? true : false;
+                return v;
+            });
+            delete fields.private;
         }
 
         return fields;
