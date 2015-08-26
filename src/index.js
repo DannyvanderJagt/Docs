@@ -3,6 +3,8 @@ import Typer, {Type as Type} from 'typer';
 import Util from 'util';
 
 import File from './file';
+import Namespace from './namespace';
+import Tags from './tags';
 
 /**
  * @used Typer
@@ -11,7 +13,7 @@ Typer.set({throw: true});
 
 /**
  * Docs
- * @namespace docs/typer
+ * @namespace docs
  */
 let Docs = {
     /**
@@ -23,6 +25,11 @@ let Docs = {
      * @var {Array} files - All the file instances.
      */
     files:[],
+    
+    /**
+     * @var {Object} namespaces - All the namespaces.
+     */
+    namespaces:{},
     
     /**
      * Watch directories and/or files.
@@ -50,6 +57,7 @@ let Docs = {
         return this.paths;
     },
     
+    /* File related stuff */
     /**
      * Get all the files within a directory and the sub directorties.
      * @param  {String} directory - The directory
@@ -92,10 +100,73 @@ let Docs = {
         file.getContents()
             .getComments()
             .destructComments();
+    },
+    
+    /* Namespaces related stuff */
+    fillNamespace(namespaces, data){
+        Type('Array', namespaces);
+        Type('Object', data);
+        
+        let name = namespaces.join('/');
+        
+        // First.
+        if(!this.namespaces[name]){
+            this.namespaces[name] = {
+                sub:[]
+            };
+        }
+        
+        let obj = this.namespaces[name];
+        
+        if(namespaces.length > 1){
+            for(let i = 1; i < namespaces.length; i++){
+                if(!obj.sub){
+                    obj.sub = [];
+                }
+                obj.sub.push(namespaces.join('/'));
+            }
+        }
+
+        for(let tag in data){
+            this.addTagToFields(tag, data[tag],obj);
+        }
+    },
+    addTagToFields(tag, result, fields){
+        if(Tags[tag].type === 'array'){
+            if(!fields[tag]){
+                fields[tag] = [];
+            }
+            if(Util.isArray(result)){
+                result.map((res) => {
+                    fields[tag].push(res);
+                });
+            }else{
+                fields[tag].push(result);
+            }
+        }
+        
+        if(Tags[tag].type === 'string'){
+            if(!fields[tag]){
+                fields[tag] = "";
+            }
+            fields[tag] += result;
+        }
+        
+        if(Tags[tag].type === 'boolean'){
+            fields[tag] = result;
+        }
+        
+        if(Tags[tag].type === 'replace'){
+            fields[tag] = result;
+        }
+        
+        return fields;
     }
 };
 
 export default Docs;
 
-Docs.watch(__dirname);
+// Docs.watch(__dirname);
+Docs.watch(__dirname+'/index.js');
 Docs.destruct();
+console.log(Docs.namespaces);

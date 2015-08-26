@@ -1,10 +1,11 @@
 import Fs from 'fs';
 import Tags from './tags';
 import Util from 'util';
+import Docs from './index';
 
 /**
- * Docs
- * @namespace docs
+ * File
+ * @namespace docs/file
  */
 class File{
     constructor(path){
@@ -14,14 +15,31 @@ class File{
         this.namespace = null;
         this.fields = {};
     }
+    /**
+     * Get the contents of the file.
+     * @return {scope}
+     */
     getContents(){
         this.contents = Fs.readFileSync(this.path, 'utf-8');
         return this;
     }
+    /**
+     * Get the comments of the file contents.
+     * @return {scope}
+     */
     getComments(){
         let result = this.contents.match(/\/\*\*\n[^]*?\*\//g);
+        if(result){
+            this.getLineNumber(result[0]);
+        }
         this.comments = result || [];
         return this;
+    }
+    getLineNumber(comment){
+        let start = this.contents.indexOf(comment);
+        let length = comment.length;
+        let lines = this.contents.substr(0, start+length).match(/[\n\r]/g).length + 2;
+        return lines;
     }
     destructComments(){
         this.comments.forEach((comment) => {
@@ -32,24 +50,39 @@ class File{
             });
 
             // Process all the tags.
-            let result = this.destructComment(lines);
+            let result = this.destructComment(comment, lines);
             
             for(let r in result){
-                this.addTagToFields(r, result[r], this.fields);
+                Docs.addTagToFields(r, result[r], this.fields);
             }
 
         });
-        console.log(JSON.stringify(this.fields).replace(/\n/,''));
-        
+        this.fields.file = this.path;
+        if(this.comments[0]){
+            this.fields.line = this.getLineNumber(this.comments[0]);    
+        }
+        if(this.fields.namespace){
+            Docs.fillNamespace(this.fields.namespace, this.fields);
+        }
     }
-    destructComment(comment){
+    destructComment(comment, lines){
         let fields = {};
         // Process all the tags.
-        comment.forEach((line) => {
+        lines.forEach((line) => {
             fields = Object.assign(fields, this.destructCommentLine(line));
         });
         
-        if(fields.param){
+        fields.line = this.getLineNumber(comment);
+        
+        if(fields.param || fields.return){
+            let line = this.contents.split(/[\n\r]/g)[fields.line-1];
+            line = line.replace(/\s*/,'');
+            line = line.match(/^(.*)\(\)/);
+            if(line){
+                line = line[1];
+            }
+            
+            fields.name = line;
             fields = {
                 'function': fields
             };
@@ -59,14 +92,16 @@ class File{
     }
     destructCommentLine(line){
         let fields = {};
-        if(!line.match(/^\s*\@/m)){
+
+        if(line.match(/^\s*\@/m) === null){
             // This comment has a title!
             fields.description = line;
+            return fields;
         }
         
         let tagCheck = line.match(/^\s*\@([\w]+)/m);
         if(!tagCheck){
-            return false;
+            return fields;
         }
         
         let tag = tagCheck[1];
@@ -78,40 +113,8 @@ class File{
         
         let result = Tags[tag].process(line);
         
-        this.addTagToFields(tag, result, fields);
+        Docs.addTagToFields(tag, result, fields);
 
-        return fields;
-    }
-    addTagToFields(tag, result, fields){
-        if(Tags[tag].type === 'array'){
-            
-            
-            if(!fields[tag]){
-                fields[tag] = [];
-            }
-            // console.log("ADD ARRAY",tag,  result);
-            if(Util.isArray(result)){
-                fields[tag].push(result[0]);
-            }else{
-                fields[tag].push(result);
-            }
-        }
-        
-        if(Tags[tag].type === 'string'){
-            if(!fields[tag]){
-                fields[tag] = "";
-            }
-            fields[tag] += result;
-        }
-        
-        if(Tags[tag].type === 'boolean'){
-            fields[tag] = result;
-        }
-        
-        if(Tags[tag].type === 'replace'){
-            fields[tag] = result;
-        }
-        
         return fields;
     }
 }

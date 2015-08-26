@@ -1,10 +1,13 @@
+/**
+ * Tags
+ * @namespace docs/tags
+ */
 var Tags = {
     used:{
         type: 'array',
         process(line){
             // Format: @used The name
             let parts = line.match(/\@[\w]+\s*(.*)/);
-            console.log('USED', parts[1]);
             return parts[1];
         }
     },
@@ -103,6 +106,18 @@ var Tags = {
         type: 'array',
         process(line){
             return true;
+        }
+    },
+    line:{
+        type: 'replace', 
+        process(line){
+            return line;
+        }
+    },
+    file:{
+        type: 'string', 
+        process(line){
+            return line;
         }
     }
 };
