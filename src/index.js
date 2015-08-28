@@ -16,19 +16,19 @@ Typer.set({throw: true});
 let Docs = {
     /**
      * @private
-     * @var {Array} paths - All the files/paths that are watched.
+     * @var {Array} _paths - All the files/paths that are watched.
      */
     _paths:[],
     
     /**
      * @private
-     * @var {Object} files - All the file instances.
+     * @var {Object} _files - All the file instances.
      */
     _files:{},
     
     /**
      * @private
-     * @var {Object} namespaces - All the namespaces.
+     * @var {Object} _namespaces - All the namespaces.
      */
     _namespaces:{},
     
@@ -54,12 +54,6 @@ let Docs = {
     /**
      * Get all the files from a path.
      * @private
-     * @deprecated 
-     * @deprecated description
-     * @deprecated v0.2
-     * @deprecated v0.2 - description
-     * @deprecated cc962c23b5b754ef0a92bfd88619f6bef25bc16ada
-     * @deprecated cc962c23b5b754ef0a92bfd88619f6bef25bc16ada - description
      * @name _getFiles
      * @param  {String | Array<String>} paths - The path(s)
      * @return {Array<String>} All the founded filepaths.
@@ -95,7 +89,7 @@ let Docs = {
 
 export default Docs;
 
-// Docs.compile(__dirname);
-Docs.compile(__dirname+'/index.js');
+Docs.compile(__dirname);
+// Docs.compile(__dirname+'/index.js');
 // Docs.destruct();
 // console.log(Docs.namespaces);

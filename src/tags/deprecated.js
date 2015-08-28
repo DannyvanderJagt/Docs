@@ -1,5 +1,5 @@
 export default {
-    type: 'string',
+    type: 'array',
     process(line){
         line = line.split(/@[\w]+\s*/)[1];
         

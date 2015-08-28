@@ -3,7 +3,7 @@ import Tags from './index.js';
 export default {
     type: 'array',
     process(line){
-        let parts = line.match(/\{([\w\>/<\|\s]+)\}\s*(.*)?/);
+        let parts = line.match(/\{([\w\>/<\|\s\,]+)\}\s*(.*)?/);
         
         if(!parts){
             return false;

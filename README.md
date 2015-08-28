@@ -51,11 +51,6 @@ You can split you code into sections.
 `@var {type} name - description`
 
 
-### `@function`  
-Add the tag to identify a function.
-`@function`
-
-
 ### `@namespace`  
 
 

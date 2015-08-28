@@ -2,6 +2,7 @@ import Fs from 'fs';
 import Util from 'util';
 import Docs from './index';
 import Tags from './tags';
+import uuid from 'rocket-uuid';
 
 /**
  * File
@@ -15,18 +16,26 @@ class File{
      * @return {void}
      */
     constructor(path){
+        this.id = uuid();
         this.path = path;
+        this.namespace = [];
         
         // Get file.
         this.contents = this._getFile(this.path);
         
         // Get all the comments.
-        this.comments = this._getComments(this.contents);
+        this.commentStrings = this._getComments(this.contents);
         
         // Process each comment.
-        this.comments.forEach((comment) => {
-            this._processComment(comment);
-        });
+        this.comments = this.commentStrings.map((comment) => {
+            comment = this._processComment(comment);
+            if(comment.namespace){
+                this.namespace = comment.namespace;
+            }
+            return comment;
+        }) || [];
+        
+        // Get the namespace.
     }
     
     /**
@@ -55,15 +64,27 @@ class File{
      * @param  {String} string - The comment.
      */
     _processComment(string){
-        let comment = this.cleanCommentString(string);
-        let type = null;
-        let tags = {};
+        let lines = this.cleanCommentString(string);
+        let type = null;        
+        let comment = {};
         
         // Abstract all the tags from the comments.
-        comment.forEach((line) => {
-            Tags.abstract(line);
+        lines.forEach((line) => {
+            let lineData = Tags.abstract(line);
+            
+            Tags.combine(lineData.tag, lineData.data, comment);
         });
         
+        // Get the type.
+        comment.type = this.getCommentType(comment);
+    
+        // Add the line.
+        comment.line = this.getLineNumber(string);
+        
+        // Add the file path.
+        comment.path = this.path;
+        
+        return comment;
     }
     /**
      * Remove any noise from comment string and split the comment into an array.
@@ -75,6 +96,22 @@ class File{
         lines = lines.filter((line)=>{
             return line === '' || line === '/**' || line == '/' ? 0 : 1;
         });
+        return lines;
+    }
+    getCommentType(tags){
+        if(tags.param && !tags.var){
+            return 'function';
+        }else if(tags.var){
+            return 'variable';
+        }else if(tags.description && !this.param && !this.var){
+            return 'description';
+        }
+        return 'generic';        
+    }
+    getLineNumber(commentString){
+        let start = this.contents.indexOf(commentString);
+        let length = commentString.length;
+        let lines = this.contents.substr(0, start+length).match(/[\n\r]/g).length + 2;
         return lines;
     }
 }

@@ -8,7 +8,6 @@ import important from './important';
 import deprecated from './deprecated';
 import description from './description';
 import namespace from './namespace';
-import _function from './function';
 import _var from './var';
 
 let tags = {
@@ -22,7 +21,6 @@ let tags = {
     namespace,
     private: _private,
     return: _return,
-    function: _function,
     var: _var
 };
 
