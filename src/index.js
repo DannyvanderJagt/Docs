@@ -41,6 +41,9 @@ let Docs = {
      */
     watch(paths){
         Type('String', paths);
+        Fs.watch(paths,  { persistent: true, recursive: true }, (type, file) => {
+            console.log('Update', file);
+        });
         if(Typer.isString(paths)){
             paths = [paths];
         }
