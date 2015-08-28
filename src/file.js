@@ -1,125 +1,81 @@
 import Fs from 'fs';
-import Tags from './tags';
 import Util from 'util';
 import Docs from './index';
+import Tags from './tags';
 
 /**
  * File
  * @namespace docs/file
  */
 class File{
+    /**
+     * Stores and prepares.
+     * @name constructor
+     * @param  {String} path - The path to the file.
+     * @return {void}
+     */
     constructor(path){
         this.path = path;
-        this.contents = '';
-        this.comments = [];
-        this.namespace = null;
-        this.fields = {};
-    }
-    /**
-     * Get the contents of the file.
-     * @return {scope}
-     */
-    getContents(){
-        this.contents = Fs.readFileSync(this.path, 'utf-8');
-        return this;
-    }
-    /**
-     * Get the comments of the file contents.
-     * @private
-     * @return {scope}
-     */
-    getComments(){
-        let result = this.contents.match(/\/\*\*\n[^]*?\*\//g);
-        if(result){
-            this.getLineNumber(result[0]);
-        }
-        this.comments = result || [];
-        return this;
-    }
-    getLineNumber(comment){
-        let start = this.contents.indexOf(comment);
-        let length = comment.length;
-        let lines = this.contents.substr(0, start+length).match(/[\n\r]/g).length + 2;
-        return lines;
-    }
-    destructComments(){
+        
+        // Get file.
+        this.contents = this._getFile(this.path);
+        
+        // Get all the comments.
+        this.comments = this._getComments(this.contents);
+        
+        // Process each comment.
         this.comments.forEach((comment) => {
-            // Split the comment into lines.
-            let lines = comment.split(/\n[\s\S]+?\*(.*)/g);
-            lines = lines.filter((line)=>{
-                return line === '' || line === '/**' || line == '/' ? 0 : 1;
-            });
-
-            // Process all the tags.
-            let result = this.destructComment(comment, lines);
-            
-            for(let r in result){
-                Docs.addTagToFields(r, result[r], this.fields);
-            }
-
+            this._processComment(comment);
         });
-        this.fields.file = this.path;
-        if(this.comments[0]){
-            this.fields.line = this.getLineNumber(this.comments[0]);    
-        }
-        if(this.fields.namespace){
-            Docs.fillNamespace(this.fields.namespace, this.fields);
-        }
     }
-    destructComment(comment, lines){
-        let fields = {};
-        // Process all the tags.
-        lines.forEach((line) => {
-            let results = this.destructCommentLine(line);
-            for(let tag in results){
-                Docs.addTagToFields(tag, results[tag], fields);
-            }
+    
+    /**
+     * Get the contents of a file.
+     * @private
+     * @name _getFile
+     * @param  {String} path - The path to the file.
+     * @return {String} The contents of the file.
+     */
+    _getFile(path){
+        return Fs.readFileSync(path, 'utf-8');
+    }
+    
+    /**
+     * Abstract all the comments from the contents of the file.
+     * @private
+     * @param  {String} contents - The contents of the file.
+     * @return {Array<Array>} The comments.
+     */
+    _getComments(contents){
+        return contents.match(/\/\*\*\n[^]*?\*\//g) || [];
+    }
+    
+    /**
+     * Process each comment and abstract everything we want to know.
+     * @param  {String} string - The comment.
+     */
+    _processComment(string){
+        let comment = this.cleanCommentString(string);
+        let type = null;
+        let tags = {};
+        
+        // Abstract all the tags from the comments.
+        comment.forEach((line) => {
+            Tags.abstract(line);
         });
         
-        fields.line = this.getLineNumber(comment);
-        
-        if(fields.param || fields.return){
-            fields = {
-                'function': fields
-            };
-        }
-        if(fields.var){
-            fields.var = fields.var.map((v) => {
-                v.line = fields.line;
-                v.private = fields.private ? true : false;
-                return v;
-            });
-            delete fields.private;
-        }
-
-        return fields;
     }
-    destructCommentLine(line){
-        let fields = {};
-
-        if(line.match(/^\s*\@/m) === null){
-            // This comment has a title!
-            fields.description = line;
-            return fields;
-        }
-        
-        let tagCheck = line.match(/^\s*\@([\w]+)/m);
-        if(!tagCheck){
-            return fields;
-        }
-        
-        let tag = tagCheck[1];
-        
-        if(!Tags[tag]){
-            console.log('[NOT SUPPORTED] - The tag ' + tag + ' is not supported!');
-            return false;
-        }
-        
-        let result = Tags[tag].process(line);
-        
-        Docs.addTagToFields(tag, result, fields);
-
-        return fields;
+    /**
+     * Remove any noise from comment string and split the comment into an array.
+     * @param  {String} string - The comment.
+     * @return {Array} The comment which is cleaned up and splitted by linebreak.
+     */
+    cleanCommentString(string){
+        let lines = string.split(/\n[\s\S]+?\*(.*)/g) || [];
+        lines = lines.filter((line)=>{
+            return line === '' || line === '/**' || line == '/' ? 0 : 1;
+        });
+        return lines;
     }
 }
 

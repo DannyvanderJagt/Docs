@@ -47,15 +47,48 @@ You can split you code into sections.
 * End the section: `@sectionEnd`
 
 ## Params
-* `@var`
-* `@function`
-* `@namespace`
-* `@description`
-* `@name`
-* `@title`
-* `@private`
-* `@public`
-* `@deprecated`
-* `@param`
-* `@return`
-* `@used`
+### `@var`  
+`@var {type} name - description`
+
+
+### `@function`  
+Add the tag to identify a function.
+`@function`
+
+
+### `@namespace`  
+
+
+### `@description`  
+
+
+### `@name`  
+`@name name`
+
+### `@private`  
+
+
+### `@public` 
+
+
+### `@deprecated`  
+> You can use v for version and/or c for commit.
+
+`@deprecated v0.2 - description`   
+`@deprecated c962c23b5b754ef0a92bfd88619f6bef25bc16ada - description`
+
+### `@param`  
+
+
+### `@return` 
+
+
+### `@used` 
+
+
+### `@note`  
+
+
+### `@important` 
+
+### `@warning`

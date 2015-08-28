@@ -3,8 +3,6 @@ import Typer, {Type as Type} from 'typer';
 import Util from 'util';
 
 import File from './file';
-import Namespace from './namespace';
-import Tags from './tags';
 
 /**
  * @used Typer
@@ -17,164 +15,87 @@ Typer.set({throw: true});
  */
 let Docs = {
     /**
+     * @private
      * @var {Array} paths - All the files/paths that are watched.
      */
-    paths:[],
+    _paths:[],
     
     /**
-     * @var {Array} files - All the file instances.
      * @private
+     * @var {Object} files - All the file instances.
      */
-    files:[],
+    _files:{},
     
     /**
+     * @private
      * @var {Object} namespaces - All the namespaces.
      */
-    namespaces:{},
+    _namespaces:{},
     
     /**
-     * Watch directories and/or files.
-     * @name watch
-     * @param  {String} paths - The path to the directory or file.
-     * @param  {String} paths - The path to the directory or file.
-     * @return {Array} All the files that are watched.
+     * Compile code file into docs.
+     * @name compile
+     * @param  {Array<String> | String} paths - The path(s)
      */
-    watch(paths){
-        Type('String', paths);
-        Fs.watch(paths,  { persistent: true, recursive: true }, (type, file) => {
-            console.log('Update', file);
+    compile(paths){
+        Type('String | Array', paths);
+        if(Typer.isString(paths)){
+            paths = [paths];
+        }
+        
+        this._paths = this._getAllFiles(paths);
+        this._files = [];
+        
+        this._paths.forEach((file) => {
+            this._files[file] = new File(file);
         });
+    },
+    
+    /**
+     * Get all the files from a path.
+     * @private
+     * @deprecated 
+     * @deprecated description
+     * @deprecated v0.2
+     * @deprecated v0.2 - description
+     * @deprecated cc962c23b5b754ef0a92bfd88619f6bef25bc16ada
+     * @deprecated cc962c23b5b754ef0a92bfd88619f6bef25bc16ada - description
+     * @name _getFiles
+     * @param  {String | Array<String>} paths - The path(s)
+     * @return {Array<String>} All the founded filepaths.
+     */
+    _getAllFiles(paths){
+        Type('String | Array', paths);
         if(Typer.isString(paths)){
             paths = [paths];
         }
         
         // Get all the files.
         let files = [];
+        
         paths.forEach((path) => {
-            files = files.concat(this.getAllFiles(path));
-        });
-        
-        // Filter.
-        files.forEach((file) => {
-            if(this.paths.indexOf(file) === -1){
-                this.paths.push(file);
-            }
-        });
-        return this.paths;
-    },
-    
-    /* File related stuff */
-    /**
-     * Get all the files within a directory and the sub directorties.
-     * @name getAllFiles
-     * @param  {String} directory - The directory
-     * @param  {String} paths - The path to the directory or file.
-     * @return {Array} the files
-     */
-    getAllFiles(directory){
-        Type('String', directory);
-        let files = [];
-        if(Fs.lstatSync(directory).isDirectory()){
-            files = this.getAllFilesFromDirectory(directory);    
-        }else{
-            files = [directory];
-        }
-        return files;
-    },
-    getAllFilesFromDirectory(directory){
-        Type('String', directory);
-        let files = [];
-        Fs.readdirSync(directory).map((result) => {
-            if(result.match(/\..*/g)){
-                files.push(directory +'/'+result);
-            }else{
-                files = files.concat(this.getAllFilesFromDirectory(directory +'/'+result));
-            }
-        });
-        return files;
-    },
-    destruct(){
-        this.paths.forEach((file) => {
-            this.destructFile(file);
-        });
-    },
-    destructFile(path){
-        Type('String', path);
-        // console.log('---- ', path);
-        let file = new File(path);
-        this.files.push(file);
-        
-        
-        file.getContents()
-            .getComments()
-            .destructComments();
-    },
-    
-    /* Namespaces related stuff */
-    fillNamespace(namespaces, data){
-        Type('Array', namespaces);
-        Type('Object', data);
-        
-        let name = namespaces.join('/');
-        
-        // First.
-        if(!this.namespaces[name]){
-            this.namespaces[name] = {
-                sub:[]
-            };
-        }
-        
-        let obj = this.namespaces[name];
-        
-        if(namespaces.length > 1){
-            for(let i = 1; i < namespaces.length; i++){
-                if(!obj.sub){
-                    obj.sub = [];
-                }
-                obj.sub.push(namespaces.join('/'));
-            }
-        }
-
-        for(let tag in data){
-            this.addTagToFields(tag, data[tag],obj);
-        }
-    },
-    addTagToFields(tag, result, fields){
-        if(Tags[tag].type === 'array'){
-            if(!fields[tag]){
-                fields[tag] = [];
-            }
-            if(Util.isArray(result)){
-                result.map((res) => {
-                    fields[tag].push(res);
+            let type = Fs.lstatSync(path);
+            if(type.isDirectory()){
+                // Get all the files from the directory.
+                let contents = Fs.readdirSync(path).map((content)=>{
+                    return path +'/'+ content;
                 });
-            }else{
-                fields[tag].push(result);
+                // Get all the files within sub directories.
+                let _files = this._getAllFiles(contents);
+                _files.forEach((_file) => {
+                    files.push(_file);
+                });
+            }else if(type.isFile()){
+                files.push(path);
             }
-        }
-        
-        if(Tags[tag].type === 'string'){
-            if(!fields[tag]){
-                fields[tag] = "";
-            }
-            fields[tag] += result;
-        }
-        
-        if(Tags[tag].type === 'boolean'){
-            fields[tag] = result;
-        }
-        
-        if(Tags[tag].type === 'replace'){
-            fields[tag] = result;
-        }
-        
-        return fields;
+        });
+        return files;
     }
 };
 
 export default Docs;
 
-Docs.watch(__dirname);
-// Docs.watch(__dirname+'/index.js');
-Docs.destruct();
-console.log(Docs.namespaces);
+// Docs.compile(__dirname);
+Docs.compile(__dirname+'/index.js');
+// Docs.destruct();
+// console.log(Docs.namespaces);
