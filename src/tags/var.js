@@ -1,5 +1,5 @@
 export default {
-    type: 'array',
+    type: 'one',
     process(line){
         let parts = line.match(/([\!\?]?)\s*\{([\w]+)\}\s*([\w]+)\s*\-\s*(.*)/);
         

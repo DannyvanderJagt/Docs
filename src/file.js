@@ -2,7 +2,7 @@ import Fs from 'fs';
 import Util from 'util';
 import Docs from './index';
 import Tags from './tags';
-import uuid from 'rocket-uuid';
+import uuid from 'uuid';
 
 /**
  * File
@@ -18,7 +18,7 @@ class File{
     constructor(path){
         this.id = uuid();
         this.path = path;
-        this.namespace = [];
+        this.namespace = null;
         
         // Get file.
         this.contents = this._getFile(this.path);
@@ -29,13 +29,18 @@ class File{
         // Process each comment.
         this.comments = this.commentStrings.map((comment) => {
             comment = this._processComment(comment);
-            if(comment.namespace){
+
+            // Check for namespace.
+            if(this.namespace === null && comment.namespace){
                 this.namespace = comment.namespace;
             }
             return comment;
         }) || [];
         
         // Get the namespace.
+        if(this.namespace){
+            Docs.addToNamespace(this);
+        }
     }
     
     /**
@@ -72,17 +77,20 @@ class File{
         lines.forEach((line) => {
             let lineData = Tags.abstract(line);
             
+            if(lineData.tag === 'var'){
+                comment.var = true;
+            }
+            
             Tags.combine(lineData.tag, lineData.data, comment);
         });
         
         // Get the type.
-        comment.type = this.getCommentType(comment);
-    
-        // Add the line.
-        comment.line = this.getLineNumber(string);
-        
-        // Add the file path.
-        comment.path = this.path;
+        comment.meta = {
+            id: this.id,
+            type: this.getCommentType(comment),
+            line: this.getLineNumber(string),
+            path: this.path
+        };
         
         return comment;
     }
@@ -102,9 +110,12 @@ class File{
         if(tags.param && !tags.var){
             return 'function';
         }else if(tags.var){
+            delete tags.var;
             return 'variable';
         }else if(tags.description && !this.param && !this.var){
             return 'description';
+        }else if(tags.used && !tags.param && !tags.var){
+            return 'used';
         }
         return 'generic';        
     }

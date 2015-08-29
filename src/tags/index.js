@@ -49,6 +49,12 @@ let Tags = {
            }
        }
        
+       if(this.tags[tag].type === 'one'){
+           for(let key in result){
+               fields[key] = result[key];
+           }
+       }
+       
        if(this.tags[tag].type === 'string'){
            if(!fields[tag]){
                fields[tag] = "";

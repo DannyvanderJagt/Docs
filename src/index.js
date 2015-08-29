@@ -3,6 +3,7 @@ import Typer, {Type as Type} from 'typer';
 import Util from 'util';
 
 import File from './file';
+import Namespace from './namespace';
 
 /**
  * @used Typer
@@ -36,6 +37,7 @@ let Docs = {
      * Compile code file into docs.
      * @name compile
      * @param  {Array<String> | String} paths - The path(s)
+     * @note hoi
      */
     compile(paths){
         Type('String | Array', paths);
@@ -46,9 +48,16 @@ let Docs = {
         this._paths = this._getAllFiles(paths);
         this._files = [];
         
+        // Create a file instance for each file.
         this._paths.forEach((file) => {
             this._files[file] = new File(file);
         });
+        
+        // Generate the markdown files and save them.
+        for(let namespace in this._namespaces){
+            this._namespaces[namespace].save();
+        }
+        
     },
     
     /**
@@ -84,12 +93,34 @@ let Docs = {
             }
         });
         return files;
+    },
+    
+    /**
+     * Add a file to a namespace.
+     * @name addToNamespace
+     * @param {String} file - A file instance.
+     */
+    addToNamespace(file){
+        let namespace = file.namespace;
+        
+        if(!namespace){
+            return false;
+        }
+        
+        // Convert the namespace into a string.
+        let namespaceString = namespace.join('/');
+        
+        if(!this._namespaces[namespaceString]){
+            this._namespaces[namespaceString] = new Namespace(namespace);
+        }
+        
+        this._namespaces[namespaceString].addFile(file);
     }
 };
 
 export default Docs;
 
-Docs.compile(__dirname);
-// Docs.compile(__dirname+'/index.js');
+// Docs.compile(__dirname);
+Docs.compile(__dirname+'/index.js');
 // Docs.destruct();
 // console.log(Docs.namespaces);

@@ -12,7 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "babel": "^5.8.21",
-    "rocket-uuid": "dannyvanderjagt/rocket-uuid"
+    "babel": "^5.8.21"
   }
 }
