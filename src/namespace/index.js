@@ -18,6 +18,9 @@ class Namespace{
             comments = comments.concat(file.comments);
         }
         
+        let name = this.namespace[this.namespace.length-1];
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+        
         let data = {
             functions: {
                 public: [],
@@ -30,7 +33,7 @@ class Namespace{
             used: [],
             generic:[],
             description: '',
-            name: this.namespace[0],
+            name: name,
             namespace: this.namespace.join('/')
         };
         

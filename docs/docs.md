@@ -1,4 +1,4 @@
-# docs
+# Docs
 > docs
 
 Docs

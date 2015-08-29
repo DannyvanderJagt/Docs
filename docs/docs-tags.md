@@ -1,4 +1,4 @@
-# docs
+# Tags
 > docs/tags
 
 Handles everything where tags are involved.
