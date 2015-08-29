@@ -29,9 +29,9 @@ class Namespace{
             },
             used: [],
             generic:[],
-            description: [],
+            description: '',
             name: this.namespace[0],
-            namespace: this.namespace
+            namespace: this.namespace.join('/')
         };
         
         comments.forEach((comment) => {
@@ -50,7 +50,7 @@ class Namespace{
             }else if(comment.meta.type === 'used'){
                 data.used.push(comment);
             }else if(comment.meta.type === 'description'){
-                data.description.push(comment);
+                data.description += comment.description;
             }else if(comment.meta.type === 'generic'){
                 data.generic.push(comment);
             }

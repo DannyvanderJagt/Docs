@@ -1,6 +1,8 @@
 # docs
 > docs
 
+Docs
+
 ## Variables
 **Public**
 
@@ -14,24 +16,13 @@
 ## Functions
 **Public**
 
-
-### `compile`
-> Deprecated: 
-> Important: 
-> Warning: 
+### `compile`  Deprecated 
 > Note: hoi
-
 Compile code file into docs.
 
 * `paths` - Array<String>,String - The path(s)
 
-
-### `addToNamespace`
-> Deprecated: 
-> Important: 
-> Warning: 
-> Note: 
-
+### `addToNamespace` 
 Add a file to a namespace.
 
 * `file` - String - A file instance.

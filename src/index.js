@@ -120,7 +120,4 @@ let Docs = {
 
 export default Docs;
 
-// Docs.compile(__dirname);
-Docs.compile(__dirname+'/index.js');
-// Docs.destruct();
-// console.log(Docs.namespaces);
+Docs.compile(__dirname);

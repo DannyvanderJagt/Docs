@@ -1,5 +1,5 @@
 import Fs from 'fs';
-var total = 0;
+
 let Template = {
     constructor(){
         this.templateString = this._getTemplate();
@@ -12,21 +12,47 @@ let Template = {
         }
         let markdown = [];
         template.forEach((line) => {
-            // TODO: Duplicate!
-            if(line.type === 'line'){
-                let lineString = line.content.replace(/\[(\w+)\]/g, function(all, name){
-                    if(data[name]){
-                        return data[name];
-                    }else{
-                        return '';
-                    }
-                });
-                markdown.push(lineString);
-            }else if(line.type === 'for'){
-                markdown.push(this._fillFor(line, data));
+            let l = this._fillLine(line, data);
+            if(l !== false){
+                markdown.push(l);
             }
         });
         return markdown.join('\n');
+    },
+    _fillLine(line, data){
+        if(line.type === 'line'){
+            let canBeRemoved = false;
+            let lineString = line.content.replace(/\[(\?)?(\w+)\]/g, function(all, mark, name){
+                if(data[name]){
+                    return data[name];
+                }else{
+                    if(mark === '?'){
+                        canBeRemoved = true;
+                    }
+                    return '';
+                }
+            });
+            if(canBeRemoved){
+                return false;
+            }
+            if(lineString.match(/\s*\[\@if/)){
+                lineString = this._fillIf(lineString, data);
+            }
+            return lineString;
+        }else if(line.type === 'for'){
+            return this._fillFor(line, data);
+        }else if(line.type === 'if'){
+            return this._fillIf(line, data);
+        }
+    },
+    _fillIf(line, data){
+        let newLine =  line.replace(/\[@if\s*(\w*)\](.*)\[@endif\]/, function(all, name, string){
+            if(data[name]){
+                return arguments[2];
+            }
+            return '';
+        });
+        return newLine;
     },
     _fillFor(templateLine, data){
         let template = templateLine.content;
@@ -60,18 +86,9 @@ let Template = {
         
         forData.forEach((item) => {
             template.forEach((line) => {
-                
-                if(line.type === 'line'){
-                    let lineString = line.content.replace(/\[(\w+)\]/g, function(all, name){
-                        if(item[name]){
-                            return item[name];
-                        }else{
-                            return '';
-                        }
-                    });
-                    markdown.push(lineString);
-                }else if(line.type === 'for'){
-                    markdown.push(this._fillFor(line, item));
+                let l = this._fillLine(line, item);
+                if(l !== false){
+                    markdown.push(l);
                 }
             });
         });
@@ -87,7 +104,7 @@ let Template = {
         let template = [];
         let looking = null;
         let founded = 0;
-        
+            
         lines.forEach((line) => {
             if(!line.match(/^\s*\[\@/)){
                 if(looking){
@@ -98,7 +115,15 @@ let Template = {
                         content: line
                     });
                 }
-                return false;
+            }else if(line.match(/^\s*\[\@if/)){
+                if(looking){
+                    looking.push(line);
+                }else{
+                    template.push({
+                        type: 'if',
+                        content: line
+                    });
+                }
             }else if(line.match(/^\s*\[\@for/)){
                 if(!looking){
                     looking = [];
@@ -109,8 +134,7 @@ let Template = {
                 founded --;
                 if(founded === 0){
                     looking.push(line);
-                    total ++;
-                    
+
                     let content = looking.slice(1,looking.length -1);
                     
                     template.push({

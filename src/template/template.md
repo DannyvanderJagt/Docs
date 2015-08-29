@@ -1,6 +1,8 @@
 # [name]
 > [namespace]
 
+[description]
+
 ## Variables
 **Public**
 [@for variables | public]
@@ -16,13 +18,11 @@
 **Public**
 
 [@for functions | public]
-
-### `[name]`
-> Deprecated: [deprecated]
-> Important: [important]
-> Warning: [warning]
-> Note: [note]
-
+### `[name]` [@if note] Deprecated [@endif]
+> Deprecated: [?deprecated]
+> Important: [?important]
+> Warning: [?warning]
+> Note: [?note]
 [description]
 
 [@for param]
@@ -32,9 +32,14 @@
 [@endfor]
 
 **Private**
-[@for functions | private]
 
+[@for functions | private]
 ### `[name]`
+> Deprecated: [?deprecated]
+> Important: [?important]
+> Warning: [?warning]
+> Note: [?note]
+> [?note][?warning][?important][?deprecated]
 [description]
 
 [@for param]
