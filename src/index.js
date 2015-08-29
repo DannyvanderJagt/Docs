@@ -37,7 +37,6 @@ let Docs = {
      * Compile code file into docs.
      * @name compile
      * @param  {Array<String> | String} paths - The path(s)
-     * @note hoi
      */
     compile(paths){
         Type('String | Array', paths);

@@ -6,7 +6,6 @@ let Template = {
         this.template = this._strip(this.templateString);
     },
     fill(data, template){
-        Fs.writeFileSync(__dirname+'/data.js', JSON.stringify(data));
         if(!template){
             template = this.template;
         }
@@ -22,9 +21,22 @@ let Template = {
     _fillLine(line, data){
         if(line.type === 'line'){
             let canBeRemoved = false;
-            let lineString = line.content.replace(/\[(\?)?(\w+)\]/g, function(all, mark, name){
-                if(data[name]){
-                    return data[name];
+            let lineString = line.content.replace(/\[(\?)?([\w\.]+?)\]/g, function(all, mark, name){
+                let d = data;
+                
+                if(name.indexOf('.')){
+                    let names = name.split('.');
+                    names.forEach((n) => {
+                        if(d !== false && d[n]){
+                            d = d[n];
+                        }else{
+                            d = false;
+                        }
+                    });
+                }
+                
+                if(d){
+                    return d;
                 }else{
                     if(mark === '?'){
                         canBeRemoved = true;
@@ -35,6 +47,7 @@ let Template = {
             if(canBeRemoved){
                 return false;
             }
+            // console.log(lineString);
             if(lineString.match(/\s*\[\@if/)){
                 lineString = this._fillIf(lineString, data);
             }
@@ -106,7 +119,16 @@ let Template = {
         let founded = 0;
             
         lines.forEach((line) => {
-            if(!line.match(/^\s*\[\@/)){
+            if(line.match(/^\s*\[\@newline/)){
+                if(looking){
+                    looking.push(line);
+                }else{
+                    template.push({
+                        type: 'line',
+                        content: '\n&nbsp;\n'
+                    });
+                }
+            }else if(!line.match(/^\s*\[\@/)){
                 if(looking){
                     looking.push(line);
                 }else{

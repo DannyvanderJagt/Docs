@@ -64,6 +64,11 @@ class Namespace{
         let markdown = this.generateMarkdown();
         // Store the markdown file.
         let path = Paths.join(__dirname,'../../','docs');
+        
+        if(!Fs.existsSync(path)){
+            Fs.mkdirSync(path);
+        }
+        
         let filename = path + '/' + (this.namespace.join('-')+'.md');
     
         Fs.writeFileSync(filename, markdown);

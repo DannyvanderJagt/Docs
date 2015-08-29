@@ -14,24 +14,27 @@ Docs
 * `_namespaces` - Object - All the namespaces.
 
 ## Functions
-**Public**
+### Public
+#### `compile` 
 
-### `compile`  Deprecated 
-> Note: hoi
 Compile code file into docs.
-
 * `paths` - Array<String>,String - The path(s)
 
-### `addToNamespace` 
-Add a file to a namespace.
+&nbsp;
 
+#### `addToNamespace` 
+
+Add a file to a namespace.
 * `file` - String - A file instance.
 
+&nbsp;
 
-**Private**
 
-### `_getFiles`
+### Private
+#### `_getFiles`
+
 Get all the files from a path.
-
 * `paths` - String,Array<String> - The path(s)
+
+&nbsp;
 

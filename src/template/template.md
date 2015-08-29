@@ -15,35 +15,32 @@
 [@endfor]
 
 ## Functions
-**Public**
-
+### Public
 [@for functions | public]
-### `[name]` [@if note] Deprecated [@endif]
+#### `[name]` [@if deprecated] Deprecated [@endif]
 > Deprecated: [?deprecated]
 > Important: [?important]
 > Warning: [?warning]
 > Note: [?note]
-[description]
 
+[description]
 [@for param]
 * `[name]` - [type] - [description]
 [@endfor]
-
+[@newline]
 [@endfor]
 
-**Private**
-
+### Private
 [@for functions | private]
-### `[name]`
+#### `[name]`
 > Deprecated: [?deprecated]
 > Important: [?important]
 > Warning: [?warning]
 > Note: [?note]
-> [?note][?warning][?important][?deprecated]
-[description]
 
+[description]
 [@for param]
 * `[name]` - [type] - [description]
 [@endfor]
-
+[@newline]
 [@endfor]

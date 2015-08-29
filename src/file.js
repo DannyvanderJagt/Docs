@@ -57,6 +57,7 @@ class File{
     /**
      * Abstract all the comments from the contents of the file.
      * @private
+     * @name _getComments
      * @param  {String} contents - The contents of the file.
      * @return {Array<Array>} The comments.
      */
@@ -66,6 +67,7 @@ class File{
     
     /**
      * Process each comment and abstract everything we want to know.
+     * @name _processComment
      * @param  {String} string - The comment.
      */
     _processComment(string){
@@ -96,6 +98,7 @@ class File{
     }
     /**
      * Remove any noise from comment string and split the comment into an array.
+     * @name cleanCommentString
      * @param  {String} string - The comment.
      * @return {Array} The comment which is cleaned up and splitted by linebreak.
      */
